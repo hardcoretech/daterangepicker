@@ -194,6 +194,8 @@
             }
         }
         this.container.addClass(this.locale.direction);
+        this.container.find('input[name="daterangepicker_start"]').inputmask(this.locale.format.toLowerCase());
+        this.container.find('input[name="daterangepicker_end"]').inputmask(this.locale.format.toLowerCase());
 
         if (typeof options.startDate === 'string')
             this.startDate = moment(options.startDate, this.locale.format);

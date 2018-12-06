@@ -10,6 +10,12 @@ Features include limiting the selectable date range, localizable strings and dat
 a single date picker mode, optional time picker (for e.g. making appointments or reservations),
 and styles that match the default Bootstrap 3 theme.
 
+## Requirements
+```
+moment==2.13.0
+jquery.inputmask==3.3.11
+```
+
 ## Build
 
 ```shell
