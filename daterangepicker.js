@@ -132,7 +132,7 @@
                             '<option value="next">Next</option>' +
                             '<option value="over">Over</option>' +
                         '</select>' +
-                        '<input class="custom_range_period" type="number" min="1">' +
+                        '<input class="custom_range_period" type="text">' +
                         '<select class="custom_range_unit select">' +
                             '<option value="day">Day(s)</option>' +
                             '<option value="month">Month(s)</option>' +
@@ -458,6 +458,7 @@
             .on('keydown.daterangepicker', '.daterangepicker_input input', $.proxy(this.formInputsKeydown, this));
 
         this.container.find('.ranges')
+            .on('input.daterangepicker', 'input.custom_range_period', $.proxy(this.inputCustomRangePeriod, this))
             .on('click.daterangepicker', 'button.custom_range_add', $.proxy(this.clickAddCustomRange, this))
             .on('click.daterangepicker', 'button.custom_range_remove', $.proxy(this.clickRemoveCustomRange, this))
             .on('click.daterangepicker', 'button.applyBtn', $.proxy(this.clickApply, this))
@@ -1463,6 +1464,18 @@
 
             list += '</ul>';
             this.container.find('.ranges').prepend(list);
+        },
+
+        inputCustomRangePeriod: function(e) {
+            /**
+             * Replace invalid characters to empty string and only allow 5 digits
+             */
+            var value = e.target.value;
+            var regex = /[^0-9]/g;
+            var numericStr = value.replace(regex, '');
+            var num = parseInt(numericStr, 10);
+            var validNumericStr = num ? num.toString() : '';
+            e.target.value = validNumericStr.substring(0, 5);
         },
 
         clickAddCustomRange: function(e) {
