@@ -57,6 +57,8 @@
             rawRanges: {},
             callback: function () {},
         };
+        this.beforeOpen = function () {};
+        this.afterHide = function () {};
         this.highlightRightFormInput = false;
 
         this.opens = 'right';
@@ -98,6 +100,14 @@
         //allow setting options with data attributes
         //data-api options will be overwritten with custom javascript options
         options = $.extend(this.element.data(), options);
+
+        if (typeof options.beforeOpen === 'function') {
+            this.beforeOpen = options.beforeOpen;
+        }
+
+        if (typeof options.afterHide === 'function') {
+            this.afterHide = options.afterHide;
+        }
 
         // Hardcore Changes: add tabindex to inputs and buttons
         //html template for the picker UI
@@ -1159,6 +1169,8 @@
 
             if (this.isShowing) return;
 
+            this.beforeOpen();
+
             // Create a click proxy that is private to this instance of datepicker, for unbinding
             this._outsideClickProxy = $.proxy(function(e) { this.outsideClick(e); }, this);
 
@@ -1210,6 +1222,8 @@
             this.container.hide();
             this.element.trigger('hide.daterangepicker', this);
             this.isShowing = false;
+
+            this.afterHide();
         },
 
         toggle: function(e) {
