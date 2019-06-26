@@ -142,7 +142,7 @@
                             '<option value="next">Next</option>' +
                             '<option value="over">Over</option>' +
                         '</select>' +
-                        '<input class="custom_range_period" type="text">' +
+                        '<input class="custom_range_period" type="text" positive-integer>' +
                         '<select class="custom_range_unit select">' +
                             '<option value="day">Day(s)</option>' +
                             '<option value="month">Month(s)</option>' +
