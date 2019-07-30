@@ -148,7 +148,7 @@
                             '<option value="month">Month(s)</option>' +
                             '<option value="year">Year(s)</option>' +
                         '</select>' +
-                        '<button class="custom_range_add btn btn-default btn-block btn-xs">' +
+                        '<button class="custom_range_add btn btn-default btn-block btn-xs" type="button">' +
                             '<i class="fa fa-plus"></i>' +
                         '</button>' +
                     '</div>' +
