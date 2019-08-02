@@ -59,7 +59,13 @@
         };
         this.beforeOpen = function () {};
         this.afterHide = function () {};
-        this.highlightRightFormInput = false;
+
+        this.focusableElements = {
+            START_DATE: 'startDate',
+            END_DATE: 'endDate',
+            APPLY_BTN: 'applyBtn',
+        };
+        this.nextFocusElement = this.focusableElements.START_DATE;
 
         this.opens = 'right';
         if (this.element.hasClass('pull-right'))
@@ -292,6 +298,9 @@
 
         if (typeof options.autoApply === 'boolean')
             this.autoApply = options.autoApply;
+
+        if (typeof options.autoFocusApply === 'boolean')
+            this.autoFocusApply = options.autoFocusApply;
 
         if (typeof options.autoUpdateInput === 'boolean')
             this.autoUpdateInput = options.autoUpdateInput;
@@ -581,7 +590,7 @@
                 }
             }
             // Hardcore Changes: adjust form inputs highlight logic and focus the highlighted input
-            if (this.highlightRightFormInput) {
+            if (this.nextFocusElement === this.focusableElements.END_DATE) {
                 this.container.find('input[name="daterangepicker_start"]').removeClass('active');
                 this.container.find('input[name="daterangepicker_end"]').addClass('active');
 
@@ -589,8 +598,9 @@
                   this.container.find('input[name="daterangepicker_end"]').focus();
                 }.bind(this));
 
-                this.highlightRightFormInput = false;
-            } else {
+                this.nextFocusElement = this.autoFocusApply
+                  ? this.focusableElements.APPLY_BTN : this.focusableElements.START_DATE;
+            } else if (this.nextFocusElement === this.focusableElements.START_DATE) {
                 this.container.find('input[name="daterangepicker_end"]').removeClass('active');
                 this.container.find('input[name="daterangepicker_start"]').addClass('active');
 
@@ -598,7 +608,16 @@
                   this.container.find('input[name="daterangepicker_start"]').focus();
                 }.bind(this));
 
-                this.highlightRightFormInput = true;
+                this.nextFocusElement = this.focusableElements.END_DATE;
+            } else if (this.nextFocusElement === this.focusableElements.APPLY_BTN) {
+                this.container.find('input[name="daterangepicker_end"]').removeClass('active');
+                this.container.find('input[name="daterangepicker_start"]').removeClass('active');
+
+                setTimeout(function() {
+                  this.container.find('.applyBtn').focus();
+                }.bind(this));
+
+                this.nextFocusElement = this.focusableElements.START_DATE;
             }
             this.updateMonthsInView();
             this.updateCalendars();
@@ -1200,7 +1219,7 @@
 
         hide: function(e) {
             // Hardcore Changes: reset status of form inputs highlight
-            this.highlightRightFormInput = false;
+            this.nextFocusElement = this.focusableElements.START_DATE;
 
             if (!this.isShowing) return;
 
@@ -1360,7 +1379,7 @@
                 this.setStartDate(date.clone());
 
                 // Hardcore Changes: always highlight end date if start date is selected
-                this.highlightRightFormInput = true;
+                this.nextFocusElement = this.focusableElements.END_DATE;
 
             } else if (!this.endDate && date.isBefore(this.startDate)) {
                 //special case: clicking the same date for start/end,
@@ -1368,7 +1387,8 @@
                 this.setEndDate(this.startDate.clone());
 
                 // Hardcore Changes: highlight end date if selected the same date
-                this.highlightRightFormInput = false;
+                this.nextFocusElement = this.autoFocusApply
+                  ? this.focusableElements.APPLY_BTN : this.focusableElements.START_DATE;
 
             } else { // picking end
                 if (this.timePicker) {
@@ -1387,7 +1407,8 @@
                 this.setEndDate(date.clone());
 
                 // Hardcore Changes: always highlight start date if end date is selected
-                this.highlightRightFormInput = false;
+                this.nextFocusElement = this.autoFocusApply
+                  ? this.focusableElements.APPLY_BTN : this.focusableElements.START_DATE;
 
                 if (this.autoApply) {
                   this.calculateChosenLabel();
