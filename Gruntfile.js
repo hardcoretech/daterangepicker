@@ -31,9 +31,6 @@ module.exports = function (grunt) {
     },
 
     uglify: {
-      options: {
-        mangle: false
-      },
       my_target: {
         files: {
           'dist/daterangepicker.min.js': ['daterangepicker.js', 'moment.js']
