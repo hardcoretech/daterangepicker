@@ -1,9 +1,15 @@
 {
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
 
-  // Baseline = `hardcoretech/conf-renovate` (see preset README for the
-  // inherited policy: SHA-pinned GHA, 3-day release-age soak, OSV alerts,
-  // per-ecosystem grouping, major-update isolation, datastore version pinning).
+  // Baseline = `hardcoretech/conf-renovate`. Inherited policy from the
+  // preset's `default.json5`:
+  // - `config:best-practices` (dependency dashboard, internal-checks-filter,
+  //   `groupName: null` for major updates, etc.)
+  // - SHA-pinned GHA + 3-day release-age soak + OSV vulnerability alerts
+  // - Per-ecosystem PR grouping (backend / frontend / docker / gha / terraform)
+  // - Datastore version pinning (mysql / rabbitmq / valkey on docker+helm)
+  // - PR volume controls (`prConcurrentLimit: 4`, `prHourlyLimit: 4`)
+  // - Weekly Monday schedule
   // The preset auto-bumps this pin via its own customManager (v1.1.0+).
   extends: [
     "github>hardcoretech/conf-renovate#v1.2.1",
