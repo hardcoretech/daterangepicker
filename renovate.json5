@@ -1,21 +1,88 @@
 {
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
 
-  // Baseline = `hardcoretech/conf-renovate`. Inherited policy from the
-  // preset's `default.json5`:
-  // - `config:best-practices` (dependency dashboard, internal-checks-filter,
-  //   `groupName: null` for major updates, etc.)
-  // - SHA-pinned GHA + 3-day release-age soak + OSV vulnerability alerts
-  // - Per-ecosystem PR grouping (backend / frontend / docker / gha / terraform)
-  // - Datastore version pinning (mysql / rabbitmq / valkey on docker+helm)
-  // - PR volume controls (`prConcurrentLimit: 4`, `prHourlyLimit: 4`)
-  // - Weekly Monday schedule
-  // The preset auto-bumps this pin via its own customManager (v1.1.0+).
+  // Renovate rules inlined directly here instead of via `extends` of an
+  // external preset. Group/security/volume policies are kept in this file.
   extends: [
-    "github>hardcoretech/conf-renovate#v1.2.1",
-    // Don't widen semver ranges (`^1.2.3` stays `^1.2.3`). Not in the preset.
+    "config:best-practices",
+    // Don't widen semver ranges (`^1.2.3` stays `^1.2.3`).
     ":preserveSemverRanges",
   ],
 
   labels: ["dependencies"],
+
+  // ---- Volume controls ----
+  // Effective weekly cap = weekly schedule × prConcurrentLimit × prHourlyLimit.
+  prConcurrentLimit: 4,
+  prHourlyLimit: 4,
+  schedule: ["before 5am on monday"],
+
+  // Lock file maintenance counts toward prConcurrentLimit by default.
+  lockFileMaintenance: { enabled: true, schedule: ["before 5am on monday"] },
+
+  // Suppress PRs for deps that fail Renovate's internal status checks
+  // (upstream CI red, deprecation flagged, etc.). Reduces autoclose noise.
+  internalChecksFilter: "strict",
+
+  // ---- Security ----
+  osvVulnerabilityAlerts: true,
+  vulnerabilityAlerts: {
+    enabled: true,
+    labels: ["security"],
+    // groupName:null is INTENTIONAL: security/CVE PRs must NEVER be batched
+    // with manager-grouping rules so individual review isn't delayed.
+    groupName: null,
+    // Override the top-level weekly schedule: vulnerability PRs must open
+    // immediately, not be held until Monday morning. Without this, a CVE
+    // disclosed on Tuesday would wait up to 6 days before Renovate raises
+    // a PR.
+    schedule: ["at any time"],
+  },
+
+  packageRules: [
+    // ---- Lockfile maintenance bundling ----
+    {
+      description: "Bundle lock file maintenance across all managers into one PR",
+      matchUpdateTypes: ["lockFileMaintenance"],
+      groupName: "lockfile-maintenance",
+    },
+
+    // ---- GitHub Actions: pin + soak ----
+    {
+      description: "GitHub Actions: pin to SHA digests + enforce 3-day release soak",
+      matchManagers: ["github-actions"],
+      pinDigests: true,
+      minimumReleaseAge: "3 days",
+    },
+
+    // ---- GHA grouping ----
+    {
+      description: "GHA non-major (minor, patch, digest, pin refreshes) -> gha-non-major",
+      matchManagers: ["github-actions"],
+      matchUpdateTypes: ["minor", "patch", "digest", "pin"],
+      groupName: "gha-non-major",
+    },
+    {
+      description: "GHA major -> isolated PR per action (no group)",
+      matchManagers: ["github-actions"],
+      matchUpdateTypes: ["major"],
+      groupName: null,
+    },
+
+    // ---- Frontend (npm) grouping ----
+    {
+      description: "Frontend non-major -> frontend-non-major",
+      matchManagers: ["npm"],
+      matchUpdateTypes: ["minor", "patch"],
+      groupName: "frontend-non-major",
+      minimumReleaseAge: "3 days",
+    },
+    {
+      description: "Frontend major -> isolated PR per dep (no group)",
+      matchManagers: ["npm"],
+      matchUpdateTypes: ["major"],
+      groupName: null,
+      minimumReleaseAge: "3 days",
+    },
+  ],
 }
